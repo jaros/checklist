@@ -1,6 +1,5 @@
-import 'package:english_words/english_words.dart' as prefix0;
-import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
+import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
 
@@ -136,11 +135,14 @@ class TodoListState extends State<TodoList> {
           )
         ],
       ),
-      body: _buildTodoList(),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: buildBottomBar(),
+      body: new Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          new Expanded(child: _buildTodoList()),
+          buildBottomBar()
+        ],
       ),
+      //,
     );
   }
 
@@ -150,12 +152,13 @@ class TodoListState extends State<TodoList> {
       decoration: InputDecoration(
         border: InputBorder.none,
         hintText: 'Enter NEW task',
-        contentPadding: const EdgeInsets.all(20.0),
+        contentPadding: const EdgeInsets.all(15.0),
       ),
       controller: textEditingController,
     );
     return Container(
-      height: 50.0,
+      color: Colors.white,
+      padding: new EdgeInsets.all(10.0),
       child: Row(
         children: <Widget>[
           Expanded(child: inputField),
@@ -163,11 +166,13 @@ class TodoListState extends State<TodoList> {
             icon: Icon(Icons.send),
             tooltip: 'Add new task',
             onPressed: () {
-              setState(() {
-                print('sending tedt: ${textEditingController.text}');
-                tasks.add(Todo(textEditingController.text));
-                textEditingController.clear();
-              });
+              var text = textEditingController.text;
+              if (text.isNotEmpty) {
+                setState(() {
+                  tasks.add(Todo(text));
+                  textEditingController.clear();
+                });
+              }
             },
           ),
         ],
