@@ -9,11 +9,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
+      title: 'Checklist',
       theme: ThemeData(
         primaryColor: Colors.deepOrangeAccent,
       ),
-      home: RandomWords(),
+      home: TodoList(), //RandomWords(),
     );
   }
 }
@@ -112,4 +112,105 @@ class RandomWordsState extends State<RandomWords> {
 class RandomWords extends StatefulWidget {
   @override
   RandomWordsState createState() => RandomWordsState();
+}
+
+class TodoList extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => TodoListState();
+}
+
+class TodoListState extends State<TodoList> {
+  final tasks = <Todo>[Todo('one'), Todo('two'), Todo('three')];
+  final doneTasks = Set<Todo>();
+  final _biggerFont = const TextStyle(fontSize: 18.0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Checklist'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.favorite),
+            onPressed: () => {},
+          )
+        ],
+      ),
+      body: _buildTodoList(),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        child: buildBottomBar(),
+      ),
+    );
+  }
+
+  Container buildBottomBar() {
+    var textEditingController = TextEditingController();
+    var inputField = TextField(
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        hintText: 'Enter NEW task',
+        contentPadding: const EdgeInsets.all(20.0),
+      ),
+      controller: textEditingController,
+    );
+    return Container(
+      height: 50.0,
+      child: Row(
+        children: <Widget>[
+          Expanded(child: inputField),
+          IconButton(
+            icon: Icon(Icons.send),
+            tooltip: 'Add new task',
+            onPressed: () {
+              setState(() {
+                print('sending tedt: ${textEditingController.text}');
+                tasks.add(Todo(textEditingController.text));
+                textEditingController.clear();
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodoList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemBuilder: (context, i) {
+        if (i.isOdd) return Divider();
+
+        final index = i ~/ 2;
+        if (index >= tasks.length) {
+          return null;
+        }
+        return _buildRow(tasks[index]);
+      },
+    );
+  }
+
+  Widget _buildRow(Todo todo) {
+    print('todo: ${todo.text} is done= ${todo.done}');
+    var done = todo.done;
+    return ListTile(
+      title: Text(
+        todo.text,
+        style: _biggerFont,
+      ),
+      leading: Icon(done ? Icons.check_box : Icons.check_box_outline_blank),
+      onTap: () {
+        setState(() {
+          todo.done = !done;
+        });
+      },
+    );
+  }
+}
+
+class Todo {
+  bool done = false;
+  String text;
+
+  Todo(this.text);
 }
