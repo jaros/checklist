@@ -120,7 +120,6 @@ class TodoList extends StatefulWidget {
 
 class TodoListState extends State<TodoList> {
   final tasks = <Todo>[Todo('one'), Todo('two'), Todo('three')];
-  final doneTasks = Set<Todo>();
   final _biggerFont = const TextStyle(fontSize: 18.0);
 
   @override
@@ -181,34 +180,59 @@ class TodoListState extends State<TodoList> {
   }
 
   Widget _buildTodoList() {
-    return ListView.builder(
+    return ListView.separated(
+      separatorBuilder: (ctx, i) => Divider(),
       padding: const EdgeInsets.all(16.0),
-      itemBuilder: (context, i) {
-        if (i.isOdd) return Divider();
-
-        final index = i ~/ 2;
-        if (index >= tasks.length) {
-          return null;
-        }
-        return _buildRow(tasks[index]);
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        return _buildRow(tasks[index], index, context);
       },
     );
   }
 
-  Widget _buildRow(Todo todo) {
+  Widget _buildRow(Todo todo, int index, BuildContext context) {
     print('todo: ${todo.text} is done= ${todo.done}');
     var done = todo.done;
-    return ListTile(
-      title: Text(
-        todo.text,
-        style: _biggerFont,
-      ),
-      leading: Icon(done ? Icons.check_box : Icons.check_box_outline_blank),
-      onTap: () {
+
+    return Dismissible(
+      // Each Dismissible must contain a Key. Keys allow Flutter to
+      // uniquely identify widgets.
+      key: Key(todo.text),
+      // Provide a function that tells the app
+      // what to do after an item has been swiped away.
+      onDismissed: (direction) {
+        // Remove the item from the data source.
         setState(() {
-          todo.done = !done;
+          tasks.removeAt(index);
         });
+        // Show a snackbar. This snackbar could also contain "Undo" actions.
+        Scaffold.of(context)
+            .showSnackBar(
+            SnackBar(
+              content: Text("${todo.text} dismissed"),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () {
+                  setState(() {
+                    tasks.insert(index, todo);
+                  });
+                },
+              ),
+            ));
       },
+      background: Container(color: Colors.red),
+      child: ListTile(
+        title: Text(
+          todo.text,
+          style: _biggerFont,
+        ),
+        leading: Icon(done ? Icons.check_box : Icons.check_box_outline_blank),
+        onTap: () {
+          setState(() {
+            todo.done = !done;
+          });
+        },
+      ),
     );
   }
 }
