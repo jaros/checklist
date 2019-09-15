@@ -124,6 +124,20 @@ class TodoListState extends State<TodoList> {
 
   @override
   Widget build(BuildContext context) {
+    var mainView = SafeArea(
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(new FocusNode());
+        },
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            new Expanded(child: _buildTodoList()),
+            buildBottomBar()
+          ],
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text('Checklist'),
@@ -134,13 +148,7 @@ class TodoListState extends State<TodoList> {
           )
         ],
       ),
-      body: new Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          new Expanded(child: _buildTodoList()),
-          buildBottomBar()
-        ],
-      ),
+      body: mainView,
       //,
     );
   }
@@ -206,19 +214,17 @@ class TodoListState extends State<TodoList> {
           tasks.removeAt(index);
         });
         // Show a snackbar. This snackbar could also contain "Undo" actions.
-        Scaffold.of(context)
-            .showSnackBar(
-            SnackBar(
-              content: Text("${todo.text} dismissed"),
-              action: SnackBarAction(
-                label: 'Undo',
-                onPressed: () {
-                  setState(() {
-                    tasks.insert(index, todo);
-                  });
-                },
-              ),
-            ));
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text("${todo.text} dismissed"),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () {
+              setState(() {
+                tasks.insert(index, todo);
+              });
+            },
+          ),
+        ));
       },
       background: Container(color: Colors.red),
       child: ListTile(
@@ -238,8 +244,8 @@ class TodoListState extends State<TodoList> {
 }
 
 class Todo {
-  bool done = false;
+  bool done;
   String text;
 
-  Todo(this.text);
+  Todo(this.text, [this.done = false]);
 }
