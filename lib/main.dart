@@ -137,11 +137,9 @@ class TodoListState extends State<TodoList> {
       var tass = prefs.getStringList(listId) ?? [];
       tasks = tass.map((item) {
         var dividerIdx = item.lastIndexOf("-");
-        print('idx: $dividerIdx');
-        var isDone = item.substring(dividerIdx, item.length);
-        print('isDone: $isDone');
-        var done = isDone == "true";
-        return Todo(item.substring(dividerIdx),  done);
+        var isDone = item.substring(dividerIdx + 1, item.length);
+        var text = item.substring(0, dividerIdx);
+        return Todo(text, isDone == "true");
       }).toList();
     });
   }
@@ -149,7 +147,8 @@ class TodoListState extends State<TodoList> {
   _saveTasks() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      var tass = tasks.map((todo) => todo.text + "-" + todo.done.toString()).toList();
+      var tass =
+          tasks.map((todo) => todo.text + "-" + todo.done.toString()).toList();
       prefs.setStringList(listId, tass);
     });
   }
@@ -233,7 +232,6 @@ class TodoListState extends State<TodoList> {
     tasks.insert(idx, task);
     _saveTasks();
   }
-
 
   Widget _buildTodoList() {
     return ListView.separated(
