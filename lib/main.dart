@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -119,8 +120,39 @@ class TodoList extends StatefulWidget {
 }
 
 class TodoListState extends State<TodoList> {
-  final tasks = <Todo>[Todo('one'), Todo('two'), Todo('three')];
+  final listId = 'checklist_main';
+  var tasks = <Todo>[Todo('one'), Todo('two'), Todo('three')];
   final _biggerFont = const TextStyle(fontSize: 18.0);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  //Loading counter value on start
+  _loadTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      var tass = prefs.getStringList(listId) ?? [];
+      tasks = tass.map((item) {
+        var dividerIdx = item.lastIndexOf("-");
+        print('idx: $dividerIdx');
+        var isDone = item.substring(dividerIdx, item.length);
+        print('isDone: $isDone');
+        var done = isDone == "true";
+        return Todo(item.substring(dividerIdx),  done);
+      }).toList();
+    });
+  }
+
+  _saveTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      var tass = tasks.map((todo) => todo.text + "-" + todo.done.toString()).toList();
+      prefs.setStringList(listId, tass);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +208,7 @@ class TodoListState extends State<TodoList> {
               var text = textEditingController.text;
               if (text.isNotEmpty) {
                 setState(() {
-                  tasks.add(Todo(text));
+                  addTask(text);
                   textEditingController.clear();
                 });
               }
@@ -186,6 +218,22 @@ class TodoListState extends State<TodoList> {
       ),
     );
   }
+
+  addTask(text) {
+    tasks.add(Todo(text));
+    _saveTasks();
+  }
+
+  deleteTask(idx) {
+    tasks.removeAt(idx);
+    _saveTasks();
+  }
+
+  insertTask(int idx, Todo task) {
+    tasks.insert(idx, task);
+    _saveTasks();
+  }
+
 
   Widget _buildTodoList() {
     return ListView.separated(
@@ -211,7 +259,7 @@ class TodoListState extends State<TodoList> {
       onDismissed: (direction) {
         // Remove the item from the data source.
         setState(() {
-          tasks.removeAt(index);
+          deleteTask(index);
         });
         // Show a snackbar. This snackbar could also contain "Undo" actions.
         Scaffold.of(context).showSnackBar(SnackBar(
@@ -220,7 +268,7 @@ class TodoListState extends State<TodoList> {
             label: 'Undo',
             onPressed: () {
               setState(() {
-                tasks.insert(index, todo);
+                insertTask(index, todo);
               });
             },
           ),
@@ -236,6 +284,7 @@ class TodoListState extends State<TodoList> {
         onTap: () {
           setState(() {
             todo.done = !done;
+            _saveTasks();
           });
         },
       ),
