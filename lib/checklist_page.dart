@@ -237,7 +237,8 @@ class TodoItemRowState extends State <TodoItemRow> {
           child: IconButton(
             icon: Icon(Icons.timer),
             onPressed: () {
-              DatePicker.showDateTimePicker(context,
+              DatePicker.showPicker(context,
+                  pickerModel: CustomPicker(),
                   onChanged: (date) {
                     print('change $date in time zone ' +
                         date.timeZoneOffset.inHours.toString());
@@ -245,7 +246,6 @@ class TodoItemRowState extends State <TodoItemRow> {
                   onConfirm: (date) {
                     print('confirm $date');
                   },
-                  currentTime: DateTime.now(),
                   locale: LocaleType.en);
             },
           ),
@@ -294,4 +294,30 @@ class Todo {
   String text;
 
   Todo(this.text, [this.done = false]);
+}
+
+class CustomPicker extends DateTimePickerModel {
+
+  static var date = DateTime.now();
+  CustomPicker() : super(currentTime: date.subtract(Duration(minutes: date.minute)));
+
+  @override
+  DateTime finalTime() {
+    DateTime time = currentTime.add(Duration(days: currentLeftIndex()));
+    return currentTime.isUtc
+        ? DateTime.utc(time.year, time.month, time.day, currentMiddleIndex(),
+        currentRightIndex() * 15)
+        : DateTime(time.year, time.month, time.day, currentMiddleIndex(),
+        currentRightIndex() * 15);
+  }
+
+  @override
+  String rightStringAtIndex(int index) {
+    if (index >= 0 && index < 4) {
+      var minutes =  index * 15;
+      return '$minutes'.padLeft(2, "0");
+    } else {
+      return null;
+    }
+  }
 }
