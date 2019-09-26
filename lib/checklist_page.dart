@@ -147,6 +147,7 @@ class TodoListState extends State<TodoList> {
           deleteTask(index);
         });
         // Show a snackbar. This snackbar could also contain "Undo" actions.
+        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("${todo.text} dismissed"),
           action: SnackBarAction(
