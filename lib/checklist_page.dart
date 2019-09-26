@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class TodoList extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => TodoListState();
+}
+
+class Calendar extends StatelessWidget {
+  CalendarController _calendarController = CalendarController();
+
+  @override
+  Widget build(BuildContext context) {
+    return TableCalendar(
+      calendarController: _calendarController,
+    );
+  }
+
 }
 
 class TodoListState extends State<TodoList> {
@@ -62,8 +75,19 @@ class TodoListState extends State<TodoList> {
         title: Text('Checklist'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.favorite),
-            onPressed: () => {},
+            icon: Icon(Icons.calendar_today),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) {
+                  return Scaffold(
+                    appBar: AppBar(
+                      title: Text('Events Calendar'),
+                    ),
+                    body: Calendar(),
+                  );
+                }
+              )
+            ),
           )
         ],
       ),
