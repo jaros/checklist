@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TodoList extends StatefulWidget {
@@ -133,7 +134,6 @@ class TodoListState extends State<TodoList> {
 
   Widget _buildRow(Todo todo, int index, BuildContext context) {
     print('todo: ${todo.text} is done= ${todo.done}');
-    var done = todo.done;
 
     return Dismissible(
       // Each Dismissible must contain a Key. Keys allow Flutter to
@@ -161,20 +161,72 @@ class TodoListState extends State<TodoList> {
         ));
       },
       background: Container(color: Colors.red),
-      child: ListTile(
-        title: Text(
-          todo.text,
-          style: _biggerFont,
+      child: TodoItemRow(todo, _saveTasks),
+    );
+  }
+}
+
+class TodoItemRow extends StatefulWidget {
+
+  final Todo todo;
+  final Function onUpdate;
+
+  TodoItemRow(this.todo, this.onUpdate);
+
+  @override
+  State<StatefulWidget> createState() => new TodoItemRowState(this.todo, this.onUpdate);
+
+}
+
+class TodoItemRowState extends State <TodoItemRow> {
+
+  final _biggerFont = const TextStyle(fontSize: 18.0);
+  final Todo todo;
+  final Function onUpdate;
+
+  TodoItemRowState(this.todo, this.onUpdate);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: ListTile(
+            title: Text(
+              todo.text,
+              style: _biggerFont,
+            ),
+            leading: Icon(
+                todo.done ? Icons.check_box : Icons.check_box_outline_blank),
+            onTap: () {
+              setState(() {
+                todo.done = !todo.done;
+                this.onUpdate();
+//                _saveTasks();
+              });
+            },
+            onLongPress: _pushItemEdit,
+          ),
         ),
-        leading: Icon(done ? Icons.check_box : Icons.check_box_outline_blank),
-        onTap: () {
-          setState(() {
-            todo.done = !done;
-            _saveTasks();
-          });
-        },
-        onLongPress: _pushItemEdit,
-      ),
+        Expanded(
+          flex: 0,
+          child: IconButton(
+            icon: Icon(Icons.timer),
+            onPressed: () {
+              DatePicker.showDateTimePicker(context,
+                  onChanged: (date) {
+                    print('change $date in time zone ' +
+                        date.timeZoneOffset.inHours.toString());
+                  },
+                  onConfirm: (date) {
+                    print('confirm $date');
+                  },
+                  currentTime: DateTime.now(),
+                  locale: LocaleType.en);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -209,7 +261,9 @@ class TodoListState extends State<TodoList> {
       ),
     );
   }
+
 }
+
 
 class Todo {
   bool done;
