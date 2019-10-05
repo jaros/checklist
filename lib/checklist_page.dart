@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
+
+
+var formatter = new DateFormat('MMM d HH:mm');
 
 class TodoList extends StatefulWidget {
   @override
@@ -220,6 +224,7 @@ class TodoItemRowState extends State <TodoItemRow> {
               todo.text,
               style: _biggerFont,
             ),
+            subtitle: todo.date != null ? Text(formatter.format(todo.date)) : null,
             leading: Icon(
                 todo.done ? Icons.check_box : Icons.check_box_outline_blank),
             onTap: () {
@@ -235,7 +240,7 @@ class TodoItemRowState extends State <TodoItemRow> {
         Expanded(
           flex: 0,
           child: IconButton(
-            icon: Icon(Icons.timer),
+            icon: Icon(Icons.access_time),
             onPressed: () {
               DatePicker.showPicker(context,
                   pickerModel: CustomPicker(),
@@ -245,6 +250,8 @@ class TodoItemRowState extends State <TodoItemRow> {
                   },
                   onConfirm: (date) {
                     print('confirm $date');
+                    todo.date = date;
+                    this.onUpdate();
                   },
                   locale: LocaleType.en);
             },
@@ -292,13 +299,16 @@ class TodoItemRowState extends State <TodoItemRow> {
 class Todo {
   bool done;
   String text;
+  DateTime date;
 
   Todo(this.text, [this.done = false]);
 }
 
 class CustomPicker extends DateTimePickerModel {
 
+  static const minutesStep = 15;
   static var date = DateTime.now();
+
   CustomPicker() : super(currentTime: date.subtract(Duration(minutes: date.minute)));
 
   @override
@@ -306,15 +316,15 @@ class CustomPicker extends DateTimePickerModel {
     DateTime time = currentTime.add(Duration(days: currentLeftIndex()));
     return currentTime.isUtc
         ? DateTime.utc(time.year, time.month, time.day, currentMiddleIndex(),
-        currentRightIndex() * 15)
+        currentRightIndex() * minutesStep)
         : DateTime(time.year, time.month, time.day, currentMiddleIndex(),
-        currentRightIndex() * 15);
+        currentRightIndex() * minutesStep);
   }
 
   @override
   String rightStringAtIndex(int index) {
     if (index >= 0 && index < 4) {
-      var minutes =  index * 15;
+      var minutes =  index * minutesStep;
       return '$minutes'.padLeft(2, "0");
     } else {
       return null;
