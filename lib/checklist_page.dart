@@ -1,27 +1,14 @@
+import 'package:check_flut/calendar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 var formatter = new DateFormat('MMM d HH:mm');
 
 class TodoList extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => TodoListState();
-}
-
-class Calendar extends StatelessWidget {
-  CalendarController _calendarController = CalendarController();
-
-  @override
-  Widget build(BuildContext context) {
-    return TableCalendar(
-      calendarController: _calendarController,
-    );
-  }
-
 }
 
 class TodoListState extends State<TodoList> {
@@ -53,7 +40,7 @@ class TodoListState extends State<TodoList> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       var tass =
-      tasks.map((todo) => todo.text + "-" + todo.done.toString()).toList();
+          tasks.map((todo) => todo.text + "-" + todo.done.toString()).toList();
       prefs.setStringList(listId, tass);
     });
   }
@@ -80,18 +67,15 @@ class TodoListState extends State<TodoList> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.calendar_today),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) {
-                  return Scaffold(
-                    appBar: AppBar(
-                      title: Text('Events Calendar'),
-                    ),
-                    body: Calendar(),
-                  );
-                }
-              )
-            ),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text('Events Calendar'),
+                ),
+                body: CalendarWidget(this.tasks),
+              );
+            })),
           )
         ],
       ),
@@ -161,7 +145,7 @@ class TodoListState extends State<TodoList> {
   }
 
   Widget _buildRow(Todo todo, int index, BuildContext context) {
-    print('todo: ${todo.text} is done= ${todo.done}');
+//    print('todo: ${todo.text} is done= ${todo.done}');
 
     return Dismissible(
       // Each Dismissible must contain a Key. Keys allow Flutter to
@@ -175,7 +159,8 @@ class TodoListState extends State<TodoList> {
           deleteTask(index);
         });
         // Show a snackbar. This snackbar could also contain "Undo" actions.
-        Scaffold.of(context).removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+        Scaffold.of(context)
+            .removeCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("${todo.text} dismissed"),
           action: SnackBarAction(
@@ -195,19 +180,17 @@ class TodoListState extends State<TodoList> {
 }
 
 class TodoItemRow extends StatefulWidget {
-
   final Todo todo;
   final Function onUpdate;
 
   TodoItemRow(this.todo, this.onUpdate);
 
   @override
-  State<StatefulWidget> createState() => new TodoItemRowState(this.todo, this.onUpdate);
-
+  State<StatefulWidget> createState() =>
+      new TodoItemRowState(this.todo, this.onUpdate);
 }
 
-class TodoItemRowState extends State <TodoItemRow> {
-
+class TodoItemRowState extends State<TodoItemRow> {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final Todo todo;
   final Function onUpdate;
@@ -224,7 +207,8 @@ class TodoItemRowState extends State <TodoItemRow> {
               todo.text,
               style: _biggerFont,
             ),
-            subtitle: todo.date != null ? Text(formatter.format(todo.date)) : null,
+            subtitle:
+                todo.date != null ? Text(formatter.format(todo.date)) : null,
             leading: Icon(
                 todo.done ? Icons.check_box : Icons.check_box_outline_blank),
             onTap: () {
@@ -242,18 +226,12 @@ class TodoItemRowState extends State <TodoItemRow> {
           child: IconButton(
             icon: Icon(Icons.access_time),
             onPressed: () {
-              DatePicker.showPicker(context,
-                  pickerModel: CustomPicker(),
-                  onChanged: (date) {
-                    print('change $date in time zone ' +
-                        date.timeZoneOffset.inHours.toString());
-                  },
+              DatePicker.showPicker(context, pickerModel: CustomPicker(),
                   onConfirm: (date) {
-                    print('confirm $date');
-                    todo.date = date;
-                    this.onUpdate();
-                  },
-                  locale: LocaleType.en);
+                print('confirm $date');
+                todo.date = date;
+                this.onUpdate();
+              }, locale: LocaleType.en);
             },
           ),
         ),
@@ -268,7 +246,7 @@ class TodoItemRowState extends State <TodoItemRow> {
         builder: (BuildContext context) {
           var sample = ["üks", "kaks", "kolm"];
           final Iterable<ListTile> tiles = sample.map(
-                (String text) {
+            (String text) {
               return ListTile(
                 title: Text(
                   text,
@@ -292,9 +270,7 @@ class TodoItemRowState extends State <TodoItemRow> {
       ),
     );
   }
-
 }
-
 
 class Todo {
   bool done;
@@ -305,26 +281,26 @@ class Todo {
 }
 
 class CustomPicker extends DateTimePickerModel {
-
   static const minutesStep = 15;
   static var date = DateTime.now();
 
-  CustomPicker() : super(currentTime: date.subtract(Duration(minutes: date.minute)));
+  CustomPicker()
+      : super(currentTime: date.subtract(Duration(minutes: date.minute)));
 
   @override
   DateTime finalTime() {
     DateTime time = currentTime.add(Duration(days: currentLeftIndex()));
     return currentTime.isUtc
         ? DateTime.utc(time.year, time.month, time.day, currentMiddleIndex(),
-        currentRightIndex() * minutesStep)
+            currentRightIndex() * minutesStep)
         : DateTime(time.year, time.month, time.day, currentMiddleIndex(),
-        currentRightIndex() * minutesStep);
+            currentRightIndex() * minutesStep);
   }
 
   @override
   String rightStringAtIndex(int index) {
     if (index >= 0 && index < 4) {
-      var minutes =  index * minutesStep;
+      var minutes = index * minutesStep;
       return '$minutes'.padLeft(2, "0");
     } else {
       return null;
