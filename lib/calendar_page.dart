@@ -93,6 +93,7 @@ class Calendar extends State<CalendarWidget> with TickerProviderStateMixin {
 
   Widget _buildEventList() {
     return ListView(
+      // sort by todo.date - time
       children: _selectedEvents
           .map((event) => Container(
         decoration: BoxDecoration(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:check_flut/calendar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
@@ -15,6 +17,7 @@ class TodoListState extends State<TodoList> {
   final listId = 'checklist_main';
   var tasks = <Todo>[Todo('one'), Todo('two'), Todo('three')];
   final _biggerFont = const TextStyle(fontSize: 18.0);
+  final ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
@@ -93,6 +96,7 @@ class TodoListState extends State<TodoList> {
         contentPadding: const EdgeInsets.all(15.0),
       ),
       controller: textEditingController,
+      onTap: scrollBottom,
     );
     return Container(
       color: Colors.white,
@@ -110,12 +114,22 @@ class TodoListState extends State<TodoList> {
                   addTask(text);
                   textEditingController.clear();
                 });
+                scrollBottom();
               }
             },
           ),
         ],
       ),
     );
+  }
+
+  scrollBottom() {
+    Timer(Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut);
+    });
   }
 
   addTask(text) {
@@ -136,6 +150,7 @@ class TodoListState extends State<TodoList> {
   Widget _buildTodoList() {
     return ListView.separated(
       separatorBuilder: (ctx, i) => Divider(),
+      controller: _scrollController,
       padding: const EdgeInsets.all(16.0),
       itemCount: tasks.length,
       itemBuilder: (context, index) {
